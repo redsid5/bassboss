@@ -1,0 +1,179 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>bASSboss &mdash; Premium Wireless Tab Audio Relay</title>
+  <link rel="stylesheet" href="css/style.css">
+  <!-- PeerJS WebRTC API -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/peerjs/1.5.4/peerjs.min.js"></script>
+</head>
+<body>
+
+<div class="container">
+  <!-- Brand Header -->
+  <header>
+    <div class="logo-container">
+      <div class="logo-icon">B</div>
+      <h1>bASSboss</h1>
+    </div>
+    <div class="logo-sub">Tab-to-Phone Audio Relay</div>
+  </header>
+
+  <!-- Navigation Mode Tabs -->
+  <div class="tabs">
+    <button class="tab-btn" id="tabPhone" data-active="true">
+      📱 Phone (Speaker)
+    </button>
+    <button class="tab-btn" id="tabLaptop">
+      💻 Laptop (Source)
+    </button>
+  </div>
+
+  <!-- ==================== PHONE PANEL (RECEIVER) ==================== -->
+  <div class="panel" id="panelPhone" data-show="true">
+    <div class="card">
+      <div class="code-display">
+        <div class="code-label">Connection Code</div>
+        <div class="code-value" id="phoneCode">----</div>
+        <button class="copy-link-btn" id="copyLinkBtn">🔗 Copy Laptop link</button>
+      </div>
+
+      <!-- Real-Time Audio Visualizer -->
+      <div class="visualizer-wrapper">
+        <canvas id="visualizerCanvas"></canvas>
+      </div>
+
+      <div class="status-box" id="phoneStatus">
+        <span class="status-indicator"></span> Starting Peer session...
+      </div>
+
+      <!-- Equalizer (Bass Booster Dashboard) -->
+      <div class="eq-container">
+        <div class="eq-title">
+          <span>🔊 Equalizer Control</span>
+          <span style="font-size:11px; color:var(--neon-green)">Web Audio API ACTIVE</span>
+        </div>
+        
+        <!-- Bass Booster Slider (Highlighted) -->
+        <div class="slider-container">
+          <div class="slider-header">
+            <span>🔊 BASS BOOST (Subwoofer)</span>
+            <span class="val boosted" id="bassVal">+6dB</span>
+          </div>
+          <input type="range" id="bassSlider" min="0" max="15" step="1" value="6">
+        </div>
+
+        <div class="eq-slider-group">
+          <!-- Mid Range Slider -->
+          <div class="slider-container">
+            <div class="slider-header">
+              <span>🎙️ Mids (Vocal Presence)</span>
+              <span class="val" id="midVal">0dB</span>
+            </div>
+            <input type="range" id="midSlider" min="-10" max="10" step="1" value="0">
+          </div>
+
+          <!-- Treble Slider -->
+          <div class="slider-container">
+            <div class="slider-header">
+              <span>🔔 Treble (High Clarity)</span>
+              <span class="val" id="trebleVal">0dB</span>
+            </div>
+            <input type="range" id="trebleSlider" min="-10" max="10" step="1" value="0">
+          </div>
+        </div>
+      </div>
+      
+      <!-- Action buttons -->
+      <div class="soundcheck-box">
+        <button class="btn btn-secondary" id="phoneTestBtn">🔊 Offline Sound Check</button>
+      </div>
+
+      <div class="guide-box" style="margin-top:20px;">
+        <h4>How it works</h4>
+        <p>1. Open this website on your laptop.</p>
+        <p>2. Enter code <b><span class="code-ref" style="color:var(--neon-green); font-family:monospace;"></span></b> (or click Copy Link to open it automatically).</p>
+        <p>3. Keep this screen active while listening.</p>
+      </div>
+    </div>
+    
+    <!-- Hidden autoplay audio tag needed for mobile WebRTC routing -->
+    <audio id="phoneAudio" autoplay playsinline style="display:none;"></audio>
+  </div>
+
+  <!-- ==================== LAPTOP PANEL (SENDER) ==================== -->
+  <div class="panel" id="panelLaptop">
+    <div class="card">
+      <div class="input-group">
+        <label for="codeInput">Enter Phone Code</label>
+        <div class="code-input-wrapper">
+          <input id="codeInput" maxlength="4" placeholder="CODE" inputmode="numeric">
+        </div>
+      </div>
+
+      <button class="btn btn-primary" id="connectBtn">⚡ Connect & Share Tab Audio</button>
+      <button class="btn btn-danger" id="stopBtn" style="display:none;">⏹ Stop Sharing Audio</button>
+      
+      <div class="status-box" id="laptopStatus" style="margin-top:16px;">
+        <span class="status-indicator"></span> Ready to stream...
+      </div>
+
+      <!-- Built-in Synth Test for easy setup -->
+      <div class="soundcheck-box">
+        <button class="btn btn-secondary" id="laptopTestBtn">🎹 Test with Built-in Synth</button>
+      </div>
+
+      <!-- Share Instruction Panel -->
+      <div class="guide-box" id="laptopShareGuide" style="display:none; border-left-color: var(--neon-pink); background: rgba(255,0,127,0.05); padding: 12px; border-radius: 8px;">
+        <h4 style="color:var(--neon-pink);">⚠️ CRITICAL ONBOARDING STEP</h4>
+        <p style="margin-bottom: 6px;">When the browser share prompt appears:</p>
+        <p>1. Select the <b>"Chrome Tab"</b> or <b>"Edge Tab"</b> that is playing your video/audio.</p>
+        <p>2. Make sure you check the box that says <b>"Also share tab audio"</b> at the bottom left.</p>
+      </div>
+
+      <div class="guide-box" style="margin-top:20px;">
+        <h4>Compatibility Note</h4>
+        <p>Tab audio capture is supported in <b>Google Chrome</b> and <b>Microsoft Edge</b>. Safari and Firefox do not currently support tab audio capture due to browser privacy constraints.</p>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ==================== MOBILE AUDIO UNLOCK GATELY ==================== -->
+<div class="unlock-overlay" id="unlockOverlay">
+  <div class="logo-icon" style="font-size:36px; width:64px; height:64px; border-radius: 16px;">B</div>
+  <div>
+    <h2>Unlock bASSboss Sound</h2>
+    <p style="margin-top:8px;">Browsers require a user tap to enable wireless audio playback.</p>
+  </div>
+  <div class="unlock-btn-pulse">
+    <button id="unlockBtn">TAP</button>
+  </div>
+</div>
+
+<!-- Scripts -->
+<script src="js/audio.js"></script>
+<script src="js/visualizer.js"></script>
+<script src="js/app.js"></script>
+
+<script>
+  // Dynamically update the code ref text in the how-it-works guide
+  document.addEventListener('DOMContentLoaded', () => {
+    const codeVal = document.getElementById('phoneCode');
+    const codeRefs = document.querySelectorAll('.code-ref');
+    
+    // Watch for code generation
+    const observer = new MutationObserver((mutations) => {
+      mutations.forEach((mutation) => {
+        if (mutation.type === 'childList') {
+          codeRefs.forEach(ref => ref.textContent = codeVal.textContent);
+        }
+      });
+    });
+    
+    observer.observe(codeVal, { childList: true });
+  });
+</script>
+</body>
+</html>

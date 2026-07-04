@@ -643,3 +643,37 @@ label {
     font-size: 44px;
   }
 }
+
+/* Active state classes for mode selector */
+.btn-mode {
+  flex: 1;
+  padding: 10px;
+  font-size: 11px;
+  font-family: 'Space Grotesk', sans-serif;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  border-radius: 10px;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  cursor: pointer;
+  display: inline-block;
+  text-align: center;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  outline: none;
+}
+.btn-mode[data-active="true"] {
+  background: linear-gradient(135deg, var(--neon-cyan) 0%, #00bcff 100%);
+  color: #000;
+  box-shadow: var(--glow-cyan);
+  border-color: var(--neon-cyan);
+}
+.btn-mode[data-active="false"] {
+  background: rgba(255, 255, 255, 0.03);
+  color: var(--text-mute);
+  border-color: rgba(255, 255, 255, 0.08);
+}
+.btn-mode[data-active="false"]:hover {
+  background: rgba(255, 255, 255, 0.08);
+  color: var(--text-main);
+  border-color: rgba(255, 255, 255, 0.2);
+}

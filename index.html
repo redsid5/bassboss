@@ -48,6 +48,12 @@
         <span class="status-indicator"></span> Starting Peer session...
       </div>
 
+      <!-- Playback Mode Buttons -->
+      <div style="display: flex; gap: 10px; margin-bottom: 16px;">
+        <button class="btn-mode" id="btnBassboss" data-active="true">🔥 bASSboss Mode</button>
+        <button class="btn-mode" id="btnBackground" data-active="false">🔋 Background Mode</button>
+      </div>
+
       <!-- Equalizer (Bass Booster Dashboard) -->
       <div class="eq-container">
         <div class="eq-title">
@@ -98,8 +104,8 @@
       </div>
     </div>
     
-    <!-- Hidden autoplay audio tag needed for mobile WebRTC routing -->
-    <audio id="phoneAudio" autoplay playsinline style="display:none;"></audio>
+    <!-- Hidden autoplay audio tag needed for mobile WebRTC routing (placed offscreen to prevent browser suspension) -->
+    <audio id="phoneAudio" autoplay playsinline style="position: fixed; top: -100px; left: -100px; width: 100px; height: 100px; opacity: 0.01; pointer-events: none;"></audio>
   </div>
 
   <!-- ==================== LAPTOP PANEL (SENDER) ==================== -->

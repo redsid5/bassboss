@@ -17,6 +17,8 @@
   const phoneStatusEl = document.getElementById('phoneStatus');
   const phoneAudioEl = document.getElementById('phoneAudio');
   const copyLinkBtn = document.getElementById('copyLinkBtn');
+  const btnBassboss = document.getElementById('btnBassboss');
+  const btnBackground = document.getElementById('btnBackground');
   
   const codeInput = document.getElementById('codeInput');
   const connectBtn = document.getElementById('connectBtn');
@@ -52,6 +54,8 @@
   let isPhoneTesting = false;
   let isLaptopTesting = false;
   let audioUnlocked = false;
+  let activeStream = null;
+  let playbackMode = 'bassboss'; // 'bassboss' or 'background'
 
   // Initialize visualizer shell
   if (canvasEl) {
@@ -236,24 +240,69 @@
       call.answer();
       
       call.on('stream', (remoteStream) => {
-        // Setup Equalizer and visualizer with the remote stream!
-        window.audioEngine.setupReceiverGraph(remoteStream, phoneAudioEl);
-        
-        if (visualizer) {
-          visualizer.start(window.audioEngine.getAnalyser());
-        }
-
-        setStatus(phoneStatusEl, 'Connected — Playing laptop audio', 'ok');
+        activeStream = remoteStream;
+        applyPlaybackMode();
       });
 
       call.on('close', () => {
         setStatus(phoneStatusEl, 'Laptop disconnected.', 'err');
         window.audioEngine.disconnect();
         if (visualizer) visualizer.stop();
+        activeStream = null;
       });
       
       activeCall = call;
     });
+  }
+
+  function applyPlaybackMode() {
+    if (!activeStream) return;
+    
+    if (playbackMode === 'bassboss') {
+      if (btnBassboss) btnBassboss.dataset.active = "true";
+      if (btnBackground) btnBackground.dataset.active = "false";
+      
+      // Mute direct speaker, play via Web Audio
+      phoneAudioEl.muted = false;
+      phoneAudioEl.volume = 0.00001;
+      
+      // Route through equalizer
+      window.audioEngine.setupReceiverGraph(activeStream, phoneAudioEl);
+      if (visualizer) {
+        visualizer.start(window.audioEngine.getAnalyser());
+      }
+      setStatus(phoneStatusEl, 'Connected — Playing laptop audio (EQ Active)', 'ok');
+    } else {
+      if (btnBassboss) btnBassboss.dataset.active = "false";
+      if (btnBackground) btnBackground.dataset.active = "true";
+      
+      // Disconnect Web Audio graph
+      window.audioEngine.disconnect();
+      if (visualizer) {
+        visualizer.stop();
+      }
+      
+      // Route stream directly to speakers
+      phoneAudioEl.srcObject = activeStream;
+      phoneAudioEl.muted = false;
+      phoneAudioEl.volume = 1.0;
+      phoneAudioEl.play().catch(e => console.log("Play background failed:", e));
+      
+      setStatus(phoneStatusEl, 'Connected — Playing background audio (Natively)', 'ok');
+    }
+  }
+
+  if (btnBassboss) {
+    btnBassboss.onclick = () => {
+      playbackMode = 'bassboss';
+      applyPlaybackMode();
+    };
+  }
+  if (btnBackground) {
+    btnBackground.onclick = () => {
+      playbackMode = 'background';
+      applyPlaybackMode();
+    };
   }
 
 

@@ -262,11 +262,7 @@
       if (btnBassboss) btnBassboss.dataset.active = "true";
       if (btnBackground) btnBackground.dataset.active = "false";
       
-      // Mute direct speaker, play via Web Audio
-      phoneAudioEl.muted = false;
-      phoneAudioEl.volume = 0.00001;
-      
-      // Route through equalizer
+      // Route through equalizer (matches working version 1 exactly)
       window.audioEngine.setupReceiverGraph(activeStream, phoneAudioEl);
       if (visualizer) {
         visualizer.start(window.audioEngine.getAnalyser());
@@ -282,7 +278,7 @@
         visualizer.stop();
       }
       
-      // Route stream directly to speakers
+      // Route stream directly to speakers at full volume
       phoneAudioEl.srcObject = activeStream;
       phoneAudioEl.muted = false;
       phoneAudioEl.volume = 1.0;

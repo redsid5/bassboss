@@ -7,6 +7,35 @@
 (function() {
   const PREFIX = "bassboss-";
 
+  const PEER_CONFIG = {
+    debug: 2,
+    config: {
+      iceServers: [
+        { urls: 'stun:stun.l.google.com:19302' },
+        { urls: 'stun:stun1.l.google.com:19302' },
+        { urls: 'stun:stun2.l.google.com:19302' },
+        { urls: 'stun:stun3.l.google.com:19302' },
+        { urls: 'stun:stun4.l.google.com:19302' },
+        {
+          urls: 'turn:openrelay.metered.ca:80',
+          username: 'openrelayproject',
+          credential: 'openrelayproject'
+        },
+        {
+          urls: 'turn:openrelay.metered.ca:443',
+          username: 'openrelayproject',
+          credential: 'openrelayproject'
+        },
+        {
+          urls: 'turn:openrelay.metered.ca:443?transport=tcp',
+          username: 'openrelayproject',
+          credential: 'openrelayproject'
+        }
+      ],
+      sdpSemantics: 'unified-plan'
+    }
+  };
+
   // --- DOM Elements ---
   const tabPhone = document.getElementById('tabPhone');
   const tabLaptop = document.getElementById('tabLaptop');
@@ -217,7 +246,7 @@
   function initPhonePeer() {
     if (!panelPhone) return; // only execute on page load if receiver elements exist
     
-    phonePeer = new Peer(PREFIX + code);
+    phonePeer = new Peer(PREFIX + code, PEER_CONFIG);
     
     phonePeer.on('open', () => {
       setStatus(phoneStatusEl, 'Ready. Waiting for your laptop to connect...', '');
@@ -356,7 +385,7 @@
       const audioOnlyStream = new MediaStream(audioTracks);
 
       // Create new Peer for Laptop
-      laptopPeer = new Peer();
+      laptopPeer = new Peer(PEER_CONFIG);
 
       laptopPeer.on('open', () => {
         activeCall = laptopPeer.call(PREFIX + enteredCode, audioOnlyStream);
@@ -435,7 +464,7 @@
       // Start local synth loop and get stream
       const synthStream = window.audioEngine.startTestSynth();
       
-      laptopPeer = new Peer();
+      laptopPeer = new Peer(PEER_CONFIG);
       laptopPeer.on('open', () => {
         activeCall = laptopPeer.call(PREFIX + enteredCode, synthStream);
         
